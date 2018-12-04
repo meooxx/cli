@@ -53,5 +53,9 @@ const program =  new commander.Command(packageJson.name)
     )
   }
 
+  function init() {
+    
+  }
+
   console.log(projectName, process.argv)
 
