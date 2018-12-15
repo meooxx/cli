@@ -120,22 +120,46 @@ const program =  new commander.Command(packageJson.name)
 
     // we may not need jest for now 
     // i am not famliar with jest so just ignore it 
-    const folders = ['config', 'config/jest', 'scripts'];
-    const foldersExcludingJest = ['config', 'scripts']
+    // const folders = ['config', 'config/jest', 'scripts'];
+    const foldersExcludeJest = ['config', 'scripts']
+    const ownPath = path.resolve(__dirname, '.')
 
     // copy folders
-    foldersExcludingJest.forEach(
+    foldersExcludeJest.forEach(
       folder => fse.mkdirSync(
         path.join(appPath, folder)
       )
     )
 
     // copy files
-    const files = 
+    const files = foldersExcludeJest.reduce((files, folder)=>{
+      return files.concat(
+        fse.readdirSync(path.join(ownPath, folder))
+        .map(file=>{
+          // set full name; ownPath will be replace by appPath
+          return path.join(ownPath, folder, file)
+        })
+        // omit dirs from filters  
+        .filter(file=>fse.lstatSync(file).isFile())
+      )
+      
+    },[])
+
+    // write file in correct path
+    files.forEach(file=> {
+      const content = fse.readFileSync(file, 'utf-8')
+      //skip files which is flagged
+      if(content.match(/\/\/ @remove-file-on-eject/)) return 
+      console.log(`  Addding ${chalk.cyan(file.replace(ownPath, ''))}`)
+      fse.writeFileSync(file.replace(ownPath, appPath), content)
+    })
+
+    console.log(chalk.green('adding files success!'))
 
 
-    
 
+    // Updating the dependencies
+    // set scripts
 
 
 
