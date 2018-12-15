@@ -49,10 +49,11 @@ const program =  new commander.Command(packageJson.name)
       private: true,
     };
 
-    /**isValidName */
+    /**TODO: isValidName */
     const originDir = process.cwd()
     const appPath = path.resolve(projectName)
-    // 改变node process 目录  
+
+    // 改变node process 执行目录  
 
     fse.ensureDirSync(projectName)
     fse.writeFileSync(
@@ -80,7 +81,8 @@ const program =  new commander.Command(packageJson.name)
     appPackage.eslintConfig = {
       extends: 'react-app',
     };
-    // reademe file ignore
+
+    // TODO: reademe file ignore 
 
     fse.writeFileSync(
       appPackagePath,
@@ -107,6 +109,32 @@ const program =  new commander.Command(packageJson.name)
         throw err
       }
     }
+
+
+    // try init git
+    // 巴拉巴拉 sucess! ...
+
+
+    // eject part
+
+
+    // we may not need jest for now 
+    // i am not famliar with jest so just ignore it 
+    const folders = ['config', 'config/jest', 'scripts'];
+    const foldersExcludingJest = ['config', 'scripts']
+
+    // copy folders
+    foldersExcludingJest.forEach(
+      folder => fse.mkdirSync(
+        path.join(appPath, folder)
+      )
+    )
+
+    // copy files
+    const files = 
+
+
+    
 
 
 
