@@ -53,8 +53,7 @@ const program =  new commander.Command(packageJson.name)
     const originDir = process.cwd()
     const appPath = path.resolve(projectName)
 
-    // 改变node process 执行目录  
-
+    // TODO: or not 改变node process 执行目录  
     fse.ensureDirSync(projectName)
     fse.writeFileSync(
       path.join(appPath, 'package.json'), 
@@ -69,8 +68,8 @@ const program =  new commander.Command(packageJson.name)
   }
 
 
-  //1 write package.json
-  //2 copy temp to destination
+  //1 write package.json {name, dependecies, ...}
+  //2 copy template to destination
 
   function init(appPath) {
     const appPackagePath = path.join(appPath, 'package.json')
@@ -89,7 +88,7 @@ const program =  new commander.Command(packageJson.name)
       JSON.stringify(appPackage, null, 2) + os.EOL
     )
 
-    // dest no temp 
+    // dest does't has template dir 
     const tempPath = path.join('.', 'template')
     fse.copySync(tempPath, appPath)
 
@@ -110,13 +109,11 @@ const program =  new commander.Command(packageJson.name)
       }
     }
 
-
-    // try init git
+    // TODO: try init git
     // 巴拉巴拉 sucess! ...
 
 
     // eject part
-
 
     // we may not need jest for now 
     // i am not famliar with jest so just ignore it 
@@ -131,7 +128,11 @@ const program =  new commander.Command(packageJson.name)
       )
     )
 
-    // copy files
+
+    // get all files name
+    // [config, scripts] readdir
+    // [ ownPath/config/a, ownPath/config/b, ownPath/config/ignoreFile] 
+    // [appPath/config/a, ownPath/config/b]
     const files = foldersExcludeJest.reduce((files, folder)=>{
       return files.concat(
         fse.readdirSync(path.join(ownPath, folder))
@@ -159,6 +160,29 @@ const program =  new commander.Command(packageJson.name)
 
 
     // Updating the dependencies
+    const ownPackage = require(path.join(ownPath, 'config', 'package.json'))
+    const ownPackageDependencies = ownPackage.dependencies || {}
+    
+
+    //skip remove react-script package from dev and optional 
+    Object.keys(ownPackage).forEach(key=>{
+      if(ownPackage.optionalDependencies[key]){
+        return
+
+      }
+
+      appPackage.dependencies[key] = ownPackage.dependencies[key]
+    })
+    
+    //sort packages
+    const unsortPackages = appPackage.dependencies = {}
+    appPackage.dependencies = {}
+    Object.keys(unsortPackages)
+      .sort()
+      .forEach(i=>{
+        appPackage.dependencies[i] = unsortPackages[i]
+      })
+    
     // set scripts
 
 
