@@ -192,7 +192,7 @@ const program =  new commander.Command(packageJson.name)
     }
 
     appPackage.scripts = scripts
-    
+
     //TODO: add jest config 
     appPackage.babel = {
       preset: ['react-app']
@@ -207,7 +207,9 @@ const program =  new commander.Command(packageJson.name)
       path.join(appPackage, 'package.json'), 
       JSON.stringify(appPackage, null, 2) + os.EOL
     )
+    
 
+    // install dependencies
 
   }
 
