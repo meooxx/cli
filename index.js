@@ -132,7 +132,7 @@ const program =  new commander.Command(packageJson.name)
     // get all files name
     // [config, scripts] readdir
     // [ ownPath/config/a, ownPath/config/b, ownPath/config/ignoreFile] 
-    // [appPath/config/a, ownPath/config/b]
+    // [appPath/config/a, appPath/config/b]
     const files = foldersExcludeJest.reduce((files, folder)=>{
       return files.concat(
         fse.readdirSync(path.join(ownPath, folder))
@@ -183,9 +183,30 @@ const program =  new commander.Command(packageJson.name)
         appPackage.dependencies[i] = unsortPackages[i]
       })
     
+    console.log(chalk.cyan("updating scripts..."))
     // set scripts
+    const scripts  = {
+      start: "node scripts/start",
+      build: 'node scripts/build',
+      test: 'node scripts/test'
+    }
 
+    appPackage.scripts = scripts
+    
+    //TODO: add jest config 
+    appPackage.babel = {
+      preset: ['react-app']
+    }
 
+    // adding eslintConfig
+    appPackage.eslintConfig = {
+      extends: 'react-app'
+    };
+    
+    fse.writeFileSync(
+      path.join(appPackage, 'package.json'), 
+      JSON.stringify(appPackage, null, 2) + os.EOL
+    )
 
 
   }
