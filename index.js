@@ -153,6 +153,7 @@ function init(appPath, originDir) {
   const ownPackageDependencies = ownPackage.dependencies || {};
 
   //skip remove react-script package from dev and optional
+  // TODO: packages
   Object.keys(ownPackageDependencies).forEach(key => {
     if (ownPackage.optionalDependencies[key]) {
       return;
