@@ -42,23 +42,25 @@ function createApp(appName) {
   /**TODO: isValidName */
   const originDir = process.cwd();
 
-  //TODO: chdir ...
   const appPath = path.resolve(projectName);
-
   // TODO: or not 改变node process 执行目录
   fse.ensureDirSync(projectName);
+  //chdir process !!
+  process.chdir(appPath)
+  
   fse.writeFileSync(
     path.join(appPath, "package.json"),
     JSON.stringify(packageJson, null, 2) + os.EOL
   );
 
-  init(appPath);
+  console.log(chalk.green('start init project at', appPath))
+  init(appPath, originDir);
 }
 
 //1 write package.json {name, dependecies, ...}
 //2 copy template to destination
 
-function init(appPath) {
+function init(appPath, originDir) {
   const appPackagePath = path.join(appPath, "package.json");
   const appPackage = require(appPackagePath);
 
@@ -76,7 +78,7 @@ function init(appPath) {
   );
 
   // dest does't has template dir
-  const tempPath = path.join(".", "template");
+  const tempPath = path.join(originDir, "template");
   fse.copySync(tempPath, appPath);
 
   // try to set .gitignore
@@ -107,10 +109,6 @@ function init(appPath) {
   const foldersExcludeJest = ["config", "scripts"];
   const ownPath = path.resolve(__dirname, ".");
 
-  // copy folders
-  foldersExcludeJest.forEach(folder =>
-    fse.mkdirSync(path.join(appPath, folder))
-  );
 
   // get all files name
   // [config, scripts] readdir
@@ -129,11 +127,21 @@ function init(appPath) {
     );
   }, []);
 
+  // copy folders
+  foldersExcludeJest.forEach(folder =>
+    fse.mkdirSync(path.join(appPath, folder))
+  );
+
   // write file in correct path
   files.forEach(file => {
-    const content = fse.readFileSync(file, "utf-8");
+    let content = fse.readFileSync(file, "utf-8");
     //skip files which is flagged
     if (content.match(/\/\/ @remove-file-on-eject/)) return;
+    content = content
+      .replace(/\/\/ @remove-on-eject-begin([\s\S]*?)\/\/ @remove-on-eject-end/gm, 
+      ''
+    )
+
     console.log(`  Addding ${chalk.cyan(file.replace(ownPath, ""))}`);
     fse.writeFileSync(file.replace(ownPath, appPath), content);
   });
@@ -145,7 +153,7 @@ function init(appPath) {
   const ownPackageDependencies = ownPackage.dependencies || {};
 
   //skip remove react-script package from dev and optional
-  Object.keys(ownPackage).forEach(key => {
+  Object.keys(ownPackageDependencies).forEach(key => {
     if (ownPackage.optionalDependencies[key]) {
       return;
     }
@@ -154,8 +162,9 @@ function init(appPath) {
   });
 
   //sort packages
-  const unsortPackages = (appPackage.dependencies = {});
+  const unsortPackages = appPackage.dependencies || {};
   appPackage.dependencies = {};
+
   Object.keys(unsortPackages)
     .sort()
     .forEach(i => {
@@ -183,7 +192,7 @@ function init(appPath) {
   };
 
   fse.writeFileSync(
-    path.join(appPackage, "package.json"),
+    path.join(appPath, "package.json"),
     JSON.stringify(appPackage, null, 2) + os.EOL
   );
 
@@ -208,14 +217,19 @@ function init(appPath) {
   // installing
 
   if (shouldUseYarn) {
-    cp.spawnSync("yarn", ["--cwd"], { stdio: "inherit" });
+    cp.spawnSync("yarn",  { stdio: "inherit", cwd: appPath });
   }else {
     cp.spawnSync("npm", ["i", "--loglevel", "error"], {
       stdio: "inherit"
     });
   }
-  console.log(green('init  successfully!'));
+  console.log(chalk.green('init  successfully!'));
   console.log();
+
+  console.log(chalk.cyan('cd '), projectName)
+  console.log()
+  console.log(chalk.cyan('npm start'))
+
 }
 
 //console.log(projectName, process.argv)
