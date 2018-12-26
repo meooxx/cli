@@ -17,6 +17,18 @@ const defaultBrowsers = [
   "not op_mini all"
 ];
 
+
+  //should use yarn
+
+function shouldUseYarn() {
+  try {
+    cp.execSync("yarn --v", { stdio: "ignore" });
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
 const program = new commander.Command(packageJson.name)
   .version(packageJson.version, "-v, --version")
   .arguments("<project-dir>")
@@ -52,15 +64,37 @@ function createApp(appName) {
     path.join(appPath, "package.json"),
     JSON.stringify(packageJson, null, 2) + os.EOL
   );
+  const dependecies = [ 'react', 'react-dom']
+  const useYarn =  shouldUseYarn()
+  const tool =useYarn ? 'yarn': 'npm'
+
+
+  let args
+  if(useYarn) {
+    args = [
+      'add', 
+    ].concat(dependecies)
+    cp.spawnSync(tool, )
+  }else {
+    args = [
+      'i',
+      '-S'
+    ]
+  }
+   
+
+  cp.spawnSync(tool, args, {
+    stdio: 'inherit'
+  })
 
   console.log(chalk.green('start init project at', appPath))
-  init(appPath, originDir);
+  init(appPath, originDir, useYarn);
 }
 
 //1 write package.json {name, dependecies, ...}
 //2 copy template to destination
 
-function init(appPath, originDir) {
+function init(appPath, originDir, useYarn) {
   const appPackagePath = path.join(appPath, "package.json");
   const appPackage = require(appPackagePath);
 
@@ -184,7 +218,7 @@ function init(appPath, originDir) {
 
   //TODO: add jest config
   appPackage.babel = {
-    preset: ["react-app"]
+    presets: ["react-app"]
   };
 
   // adding eslintConfig
@@ -204,20 +238,10 @@ function init(appPath, originDir) {
   }
   console.log(chalk.cyan("install dependencies"));
 
-  //should use yarn
-
-  const shouldUseYarn = () => {
-    try {
-      cp.execSync("yarn --v", { stdio: "ignore" });
-      return true;
-    } catch (e) {
-      return false;
-    }
-  };
 
   // installing
 
-  if (shouldUseYarn) {
+  if (useYarn) {
     cp.spawnSync("yarn",  { stdio: "inherit", cwd: appPath });
   }else {
     cp.spawnSync("npm", ["i", "--loglevel", "error"], {
@@ -227,8 +251,8 @@ function init(appPath, originDir) {
   console.log(chalk.green('init  successfully!'));
   console.log();
 
+  console.log('next step:')
   console.log(chalk.cyan('cd '), projectName)
-  console.log()
   console.log(chalk.cyan('npm start'))
 
 }
