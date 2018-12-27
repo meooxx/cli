@@ -29,6 +29,28 @@ function shouldUseYarn() {
   }
 };
 
+function isSafeToCreateProject(root, name) {
+  const validFiles = [
+    '.git',
+    '.gitignore'
+  ]
+
+  const conflictsFiles = fse.readdirSync(root)
+    .filter(file=>!validFiles.includes(file))
+  if(conflictsFiles.length > 0) {
+    console.log(`The directory ${name} has containe files that could conflict:`)
+    console.log()
+    conflictsFiles.forEach(file=>{
+      console.log(file)
+    })
+    console.log()
+    console.log("Ether try using another directory name, or remove the files listed above ")
+    return false 
+  }
+
+  return true
+}
+
 const program = new commander.Command(packageJson.name)
   .version(packageJson.version, "-v, --version")
   .arguments("<project-dir>")
@@ -59,6 +81,9 @@ function createApp(appName) {
   fse.ensureDirSync(projectName);
   //chdir process !!
   process.chdir(appPath)
+  if(!isSafeToCreateProject(appPath, projectName)) {
+    process.exit(1)
+  }
   
   fse.writeFileSync(
     path.join(appPath, "package.json"),
