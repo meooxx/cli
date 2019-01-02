@@ -62,8 +62,27 @@ const program = new commander.Command(packageJson.name)
 
 program.parse(process.argv);
 
+
+//TODO: os info, cups, os ...
+
+
 if (projectName) {
   createApp(projectName);
+}else {
+
+  console.error('Please specify the project directory:');
+  console.log(
+    `  ${chalk.cyan(program.name())} ${chalk.green('<project-directory>')}`
+  );
+  console.log();
+  console.log('For example:');
+  console.log(`  ${chalk.cyan(program.name())} ${chalk.green('my-react-app')}`);
+  console.log();
+  console.log(
+    `Run ${chalk.cyan(`${program.name()} --help`)} to see all options.`
+  );
+  process.exit(1);
+
 } // 没有项目名字情况
 
 function createApp(appName) {
